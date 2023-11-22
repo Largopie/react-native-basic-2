@@ -7,16 +7,34 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const TODOS_KEY = '@toDos';
+  const WORKING_STATE_KEY = '@working';
   const [working, setWorking] = useState(true);
   const [text, setText] = useState('');
   const [toDos, setToDos] = useState({});
 
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+  const travel = async (state) => {
+    setWorking(state);
+    await saveWorking(state);
+  };
+
+  const work = async (state) => {
+    setWorking(state);
+    await saveWorking(state);
+  };
+
   const onChangeText = (payload) => setText(payload);
 
   const saveToDo = async (saveItem) => {
     await AsyncStorage.setItem(TODOS_KEY, JSON.stringify(saveItem));
+  };
+
+  const saveWorking = async (state) => {
+    await AsyncStorage.setItem(WORKING_STATE_KEY, JSON.stringify(state));
+  };
+
+  const loadWorkingState = async () => {
+    const workingState = await AsyncStorage.getItem(WORKING_STATE_KEY);
+    setWorking(JSON.parse(workingState));
   };
 
   const loadToDo = async () => {
@@ -43,7 +61,7 @@ export default function App() {
     delete parseToDos[key];
     await AsyncStorage.removeItem(TODOS_KEY);
     await AsyncStorage.setItem(TODOS_KEY, JSON.stringify(parseToDos));
-  }
+  };
 
   const deleteToDo = async (key) => {
     Alert.alert('Delete To Do', 'Are you Sure?', [
@@ -63,16 +81,17 @@ export default function App() {
 
   useEffect(() => {
     loadToDo();
+    loadWorkingState();
   }, []);
 
   return (
     <View style={styles.container}>
       <StatusBar style='auto' />
       <View style={styles.header}>
-        <TouchableOpacity onPress={work}>
+        <TouchableOpacity onPress={() => work(true)}>
           <Text style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}>Work</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={travel}>
+        <TouchableOpacity onPress={() => travel(false)}>
           <Text style={{ ...styles.btnText, color: !working ? 'white' : theme.grey }}>Travel</Text>
         </TouchableOpacity>
       </View>
@@ -89,11 +108,13 @@ export default function App() {
           toDos[key].working === working ? (
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
-              <TouchableOpacity id={key} onPress={() => deleteToDo(key)}>
-                <Text style={styles.deleteBtn}>
-                  <Fontisto name='trash' size={16} color={theme.grey} />
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.btnContainer}>
+                <TouchableOpacity hitSlop={15} id={key} onPress={() => deleteToDo(key)}>
+                  <Text style={styles.btn}>
+                    <Fontisto name='trash' size={16} color={theme.grey} />
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : null,
         )}
@@ -144,7 +165,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  deleteBtn: {
+  btnContainer: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+
+  btn: {
     fontSize: 16,
   },
 });
