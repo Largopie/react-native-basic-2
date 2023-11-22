@@ -12,14 +12,14 @@ export default function App() {
   const [text, setText] = useState('');
   const [toDos, setToDos] = useState({});
 
-  const travel = async (state) => {
-    setWorking(state);
-    await saveWorking(state);
+  const travel = async () => {
+    setWorking(false);
+    await saveWorking(false);
   };
 
-  const work = async (state) => {
-    setWorking(state);
-    await saveWorking(state);
+  const work = async () => {
+    setWorking(true);
+    await saveWorking(true);
   };
 
   const onChangeText = (payload) => setText(payload);
@@ -34,12 +34,13 @@ export default function App() {
 
   const loadWorkingState = async () => {
     const workingState = await AsyncStorage.getItem(WORKING_STATE_KEY);
+
     setWorking(JSON.parse(workingState));
   };
 
   const loadToDo = async () => {
     const toDos = await AsyncStorage.getItem(TODOS_KEY);
-
+    console.log(JSON.parse(toDos));
     setToDos(toDos ? JSON.parse(toDos) : {});
   };
 
@@ -48,7 +49,7 @@ export default function App() {
 
     const newToDos = {
       ...toDos,
-      [Date.now()]: { text, working, isDone: false },
+      [Date.now()]: { text, working, isDone: false, edit: false },
     };
     setToDos(newToDos);
     await saveToDo(newToDos);
@@ -71,7 +72,17 @@ export default function App() {
 
     setToDos(newToDos);
     await saveToDo(newToDos);
-  }
+  };
+
+  const editToDo = async (key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], edit: !toDos[key].edit },
+    };
+
+    setToDos(newToDos);
+    await saveToDo(newToDos);
+  };
 
   const deleteToDo = async (key) => {
     Alert.alert('Delete To Do', 'Are you Sure?', [
@@ -89,10 +100,21 @@ export default function App() {
     ]);
   };
 
+  const onEditToDo = (todo, key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], text: todo },
+    };
+
+    setToDos(newToDos);
+  };
+
   useEffect(() => {
     loadToDo();
     loadWorkingState();
   }, []);
+
+  console.log(toDos);
 
   return (
     <View style={styles.container}>
@@ -117,13 +139,43 @@ export default function App() {
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
             <View style={styles.toDo} key={key}>
-              <Text style={{ ...styles.toDoText, color: `${toDos[key].isDone ? theme.grey : 'white'}` ,textDecorationLine: `${toDos[key].isDone ? 'line-through' : 'none'}`  }}>{toDos[key].text}</Text>
+              {toDos[key].edit ? (
+                <TextInput
+                  onChangeText={(todo) => onEditToDo(todo, key)}
+                  value={toDos[key].text}
+                  style={{ ...styles.toDoText, minWidth: 180, borderBottomWidth: 2, borderColor: theme.grey }}
+                />
+              ) : (
+                <Text
+                  style={{
+                    ...styles.toDoText,
+                    color: `${toDos[key].isDone ? theme.grey : 'white'}`,
+                    textDecorationLine: `${toDos[key].isDone ? 'line-through' : 'none'}`,
+                    paddingBottom: 2,
+                  }}
+                >
+                  {toDos[key].text}
+                </Text>
+              )}
               <View style={styles.btnContainer}>
                 <TouchableOpacity hitSlop={10} onPress={() => checkIsDone(key)}>
                   <Text style={styles.btn}>
                     <Fontisto name={toDos[key].isDone ? 'checkbox-active' : 'checkbox-passive'} size={16} color='white' />
                   </Text>
                 </TouchableOpacity>
+                {toDos[key].edit ? (
+                  <TouchableOpacity hitSlop={10} onPress={() => editToDo(key)}>
+                    <Text style={styles.btn}>
+                      <Fontisto name='save' size={16} color={theme.grey} />
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity hitSlop={10} onPress={() => editToDo(key)}>
+                    <Text style={styles.btn}>
+                      <Fontisto name='eraser' size={16} color={theme.grey} />
+                    </Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity hitSlop={10} id={key} onPress={() => deleteToDo(key)}>
                   <Text style={styles.btn}>
                     <Fontisto name='trash' size={16} color={theme.grey} />
@@ -182,10 +234,12 @@ const styles = StyleSheet.create({
 
   btnContainer: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 25,
   },
 
   btn: {
     fontSize: 16,
+    width: 16,
+    height: 16,
   },
 });
