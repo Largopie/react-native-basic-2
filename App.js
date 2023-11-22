@@ -48,7 +48,7 @@ export default function App() {
 
     const newToDos = {
       ...toDos,
-      [Date.now()]: { text, working },
+      [Date.now()]: { text, working, isDone: false },
     };
     setToDos(newToDos);
     await saveToDo(newToDos);
@@ -62,6 +62,16 @@ export default function App() {
     await AsyncStorage.removeItem(TODOS_KEY);
     await AsyncStorage.setItem(TODOS_KEY, JSON.stringify(parseToDos));
   };
+
+  const checkIsDone = async (key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], isDone: !toDos[key].isDone },
+    };
+
+    setToDos(newToDos);
+    await saveToDo(newToDos);
+  }
 
   const deleteToDo = async (key) => {
     Alert.alert('Delete To Do', 'Are you Sure?', [
@@ -107,9 +117,14 @@ export default function App() {
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
             <View style={styles.toDo} key={key}>
-              <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <Text style={{ ...styles.toDoText, color: `${toDos[key].isDone ? theme.grey : 'white'}` ,textDecorationLine: `${toDos[key].isDone ? 'line-through' : 'none'}`  }}>{toDos[key].text}</Text>
               <View style={styles.btnContainer}>
-                <TouchableOpacity hitSlop={15} id={key} onPress={() => deleteToDo(key)}>
+                <TouchableOpacity hitSlop={10} onPress={() => checkIsDone(key)}>
+                  <Text style={styles.btn}>
+                    <Fontisto name={toDos[key].isDone ? 'checkbox-active' : 'checkbox-passive'} size={16} color='white' />
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity hitSlop={10} id={key} onPress={() => deleteToDo(key)}>
                   <Text style={styles.btn}>
                     <Fontisto name='trash' size={16} color={theme.grey} />
                   </Text>
