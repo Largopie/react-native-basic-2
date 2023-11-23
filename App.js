@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { theme } from './colors';
 import { Fontisto } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -84,19 +84,29 @@ export default function App() {
   };
 
   const deleteToDo = async (key) => {
-    Alert.alert('Delete To Do', 'Are you Sure?', [
-      { text: 'Cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          const newToDos = { ...toDos };
-          delete newToDos[key];
-          setToDos(newToDos);
-          await deleteItem(key);
+    if (Platform.OS === 'web') {
+      const ok = confirm('Do you want to delete this To Do?');
+      if (ok) {
+        const newToDos = { ...toDos };
+        delete newToDos[key];
+        setToDos(newToDos);
+        await deleteItem(key);
+      }
+    } else {
+      Alert.alert('Delete To Do', 'Are you Sure?', [
+        { text: 'Cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const newToDos = { ...toDos };
+            delete newToDos[key];
+            setToDos(newToDos);
+            await deleteItem(key);
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   const onEditToDo = (todo, key) => {
@@ -131,7 +141,7 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style='auto' />
       <View style={styles.header}>
-        <View style={{flexDirection: 'row', gap: 20}}>
+        <View style={{ flexDirection: 'row', gap: 20 }}>
           <TouchableOpacity onPress={() => work(true)}>
             <Text style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}>Work</Text>
           </TouchableOpacity>
