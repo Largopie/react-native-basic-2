@@ -1,0 +1,21 @@
+{
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "lang": "en",
+  "name": "todo-app",
+  "short_name": "todo-app",
+  "start_url": "/?utm_source=web_app_manifest",
+  "orientation": "portrait",
+  "related_applications": [
+    {
+      "platform": "itunes",
+      "id": "com.largopie.todo-app"
+    },
+    {
+      "platform": "play",
+      "url": "http://play.google.com/store/apps/details?id=com.largopie.todo_app",
+      "id": "com.largopie.todo_app"
+    }
+  ],
+  "prefer_related_applications": true
+}
