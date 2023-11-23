@@ -83,8 +83,6 @@ export default function App() {
     await saveToDo(newToDos);
   };
 
-  console.log(toDos);
-
   const deleteToDo = async (key) => {
     Alert.alert('Delete To Do', 'Are you Sure?', [
       { text: 'Cancel' },
