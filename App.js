@@ -110,13 +110,17 @@ export default function App() {
 
   const clearAll = () => {
     Alert.alert('Clear All', 'Are You Sure?', [
-      {text: 'Cancel'},
-      {text: 'Clear', style: 'destructive', onPress: async () => {
-        await AsyncStorage.clear();
-        setToDos({});
-      }}
-    ])
-  }
+      { text: 'Cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          await AsyncStorage.clear();
+          setToDos({});
+        },
+      },
+    ]);
+  };
 
   useEffect(() => {
     loadToDo();
@@ -127,12 +131,14 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style='auto' />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => work(true)}>
-          <Text style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}>Work</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => travel(false)}>
-          <Text style={{ ...styles.btnText, color: !working ? 'white' : theme.grey }}>Travel</Text>
-        </TouchableOpacity>
+        <View style={{flexDirection: 'row', gap: 20}}>
+          <TouchableOpacity onPress={() => work(true)}>
+            <Text style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}>Work</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => travel(false)}>
+            <Text style={{ ...styles.btnText, color: !working ? 'white' : theme.grey }}>Travel</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity hitSlop={10} onPress={clearAll}>
           <Text>
             <Fontisto name='trash' size={38} color={theme.grey} />
