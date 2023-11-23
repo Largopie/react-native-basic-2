@@ -40,7 +40,6 @@ export default function App() {
 
   const loadToDo = async () => {
     const toDos = await AsyncStorage.getItem(TODOS_KEY);
-    console.log(JSON.parse(toDos));
     setToDos(toDos ? JSON.parse(toDos) : {});
   };
 
@@ -84,6 +83,8 @@ export default function App() {
     await saveToDo(newToDos);
   };
 
+  console.log(toDos);
+
   const deleteToDo = async (key) => {
     Alert.alert('Delete To Do', 'Are you Sure?', [
       { text: 'Cancel' },
@@ -109,12 +110,20 @@ export default function App() {
     setToDos(newToDos);
   };
 
+  const clearAll = () => {
+    Alert.alert('Clear All', 'Are You Sure?', [
+      {text: 'Cancel'},
+      {text: 'Clear', style: 'destructive', onPress: async () => {
+        await AsyncStorage.clear();
+        setToDos({});
+      }}
+    ])
+  }
+
   useEffect(() => {
     loadToDo();
     loadWorkingState();
   }, []);
-
-  console.log(toDos);
 
   return (
     <View style={styles.container}>
@@ -125,6 +134,11 @@ export default function App() {
         </TouchableOpacity>
         <TouchableOpacity onPress={() => travel(false)}>
           <Text style={{ ...styles.btnText, color: !working ? 'white' : theme.grey }}>Travel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity hitSlop={10} onPress={clearAll}>
+          <Text>
+            <Fontisto name='trash' size={38} color={theme.grey} />
+          </Text>
         </TouchableOpacity>
       </View>
       <TextInput
